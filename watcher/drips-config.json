@@ -1,0 +1,14 @@
+{
+  "waveProgramId": "fdc01c95-806f-4b6a-998b-a6ed37e0d81b",
+  "wave_slug": "stellar",
+  "shortlist_size": 20,
+  "max_pending_applications": 2,
+  "min_points": 200,
+  "max_per_repo": 3,
+  "recent_days": 14,
+  "sort_by": "updatedAt",
+  "max_pages": 8,
+  "draft_provider": "claude",
+  "draft_model": "claude-opus-4-8",
+  "title_exclude_regex": "\\(buffer\\s*#\\d+\\)|\\bbuffer\\s*#\\d+|\\bpart\\s*\\d+\\s*/\\s*\\d+\\b"
+}

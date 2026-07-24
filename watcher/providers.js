@@ -27,13 +27,14 @@ const PROVIDERS = {
   claude: {
     envBin: "CLAUDE_BIN",
     defaultBin: "claude",
-    // claude -p reads the prompt from stdin, which avoids any command-line
-    // length limits on long issue bodies.
     build(prompt, model) {
-      const args = ["-p"];
-      if (model && model !== "default") args.push("--model", model);
-      return { args, stdin: prompt };
-    },
+        const args = ["-p"];
+        if (model) args.push("--model", model);
+        return {
+            args,
+            stdin: prompt
+        };
+    }
   },
   gemini: {
     envBin: "GEMINI_BIN",
@@ -60,6 +61,22 @@ const PROVIDERS = {
       args.push(prompt);
       return { args, stdin: undefined };
     },
+  },
+  copilot: {
+    envBin: "COPILOT_BIN",
+    defaultBin: "copilot",
+
+    build(prompt, model) {
+        const args = [];
+
+        if (model)
+            args.push("--model", model);
+
+        return {
+            args,
+            stdin: prompt
+        };
+    }
   },
 };
 
