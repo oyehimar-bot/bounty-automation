@@ -113,7 +113,21 @@ function draftApplication(prompt, config, opts = {}) {
       maxBuffer: MAX_BUFFER,
       windowsHide: true,
     });
-    return out.trim() || null;
+    const trimmed = out.trim();
+    if (!trimmed) {
+      // The CLI exited 0 but produced no text. This is what happens when a
+      // CLI rejects a bad --model value by printing to stderr and still
+      // exiting successfully (stderr streams straight to your terminal by
+      // default, above/around this message) - check the error shown just
+      // above and fix draft_model in config.json / drips-config.json, or
+      // remove it to use the CLI's own default model.
+      console.error(
+        `  ${name} produced no output for this draft. If an error printed above this line ` +
+          `(e.g. an invalid model name), that's why - fix or remove "draft_model" in your config.`
+      );
+      return null;
+    }
+    return trimmed;
   } catch (e) {
     const msg = (e.message || "").split("\n")[0];
     console.error(`  draft failed via ${name} (${msg})`);

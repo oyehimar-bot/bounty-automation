@@ -190,8 +190,8 @@ async function main() {
   if (!DRY) {
     fs.writeFileSync(STATE_PATH, JSON.stringify(state, null, 2));
     console.log(`\nWritten to ${OUT}`);
-    console.log(`Apply via the Drips link in each file, then mark them applied:`);
-    console.log(`  node drips.js --applied "owner/repo#123" "owner/repo#456"`);
+    console.log(`Run: node apply-drips.js`);
+    console.log(`(opens each APPLY HERE page + copies the draft to your clipboard - see README)`);
   }
 }
 

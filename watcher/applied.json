@@ -1,0 +1,44 @@
+{
+  "applied": {
+    "ANYTECHS/clips-contract#665": {
+      "at": "2026-07-25T20:05:43.455Z",
+      "source": "apply-drips.js"
+    },
+    "ANYTECHS/clips-contract#666": {
+      "at": "2026-07-25T20:06:00.327Z",
+      "source": "apply-drips.js"
+    },
+    "Agri-fund/agri-fi#700": {
+      "at": "2026-07-25T20:06:17.936Z",
+      "source": "apply-drips.js"
+    },
+    "Agri-fund/agri-fi#702": {
+      "at": "2026-07-25T20:06:27.616Z",
+      "source": "apply-drips.js"
+    },
+    "Agri-fund/agri-fi#707": {
+      "at": "2026-07-25T20:06:34.598Z",
+      "source": "apply-drips.js"
+    },
+    "Blue-Kollar/Blue-Collar#969": {
+      "at": "2026-07-25T20:06:44.365Z",
+      "source": "apply-drips.js"
+    },
+    "Blue-Kollar/Blue-Collar#970": {
+      "at": "2026-07-25T20:06:53.263Z",
+      "source": "apply-drips.js"
+    },
+    "Blue-Kollar/Blue-Collar#971": {
+      "at": "2026-07-25T20:07:10.911Z",
+      "source": "apply-drips.js"
+    },
+    "ChainLearnOfficial/chainlearn-frontend#119": {
+      "at": "2026-07-25T20:07:21.927Z",
+      "source": "apply-drips.js"
+    },
+    "ChainLearnOfficial/chainlearn-frontend#121": {
+      "at": "2026-07-25T20:07:30.493Z",
+      "source": "apply-drips.js"
+    }
+  }
+}

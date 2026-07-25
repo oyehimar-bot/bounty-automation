@@ -1,8 +1,7 @@
 {
   "poll_minutes": 20,
   "github_username": "oyehimar-bot",
-  "draft_provider": "claude",
-  "draft_model": "claude-opus-4-8",
+  "draft_provider": "copilot",
   "per_source_limit": 20,
   "max_per_repo": 3,
   "max_comments": 2,
