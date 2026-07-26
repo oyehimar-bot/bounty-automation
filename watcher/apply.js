@@ -78,6 +78,30 @@ function parseDraftFile(text) {
   return { title, url, points, comments, draft };
 }
 
+/**
+ * Re-check an issue's live GitHub status right before posting/showing it.
+ * Drafts can sit in the inbox a while before review; by then the issue may
+ * already be assigned to someone else or closed. Returns { open, assigned }
+ * or null if the check itself failed (network, gh not available, etc.) -
+ * in which case we don't block on it and show the item anyway.
+ */
+function checkStillOpen(url) {
+  try {
+    const out = execFileSync(
+      "gh",
+      ["issue", "view", url, "--json", "state,assignees"],
+      { encoding: "utf8", windowsHide: true }
+    );
+    const data = JSON.parse(out);
+    return {
+      open: (data.state || "").toUpperCase() === "OPEN",
+      assigned: Array.isArray(data.assignees) && data.assignees.length > 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function draftQualityIssue(draft, minWords) {
   if (!draft) return "empty draft";
   if (/DRAFT-FAILED|no ANTHROPIC_API_KEY set/.test(draft)) return "placeholder/failed draft";
@@ -146,6 +170,7 @@ async function runAuto(files) {
 
   let posted = 0;
   let skipped = 0;
+  let stale = 0;
   for (const f of files) {
     if (posted >= limit) break;
     const text = fs.readFileSync(f, "utf8");
@@ -160,6 +185,15 @@ async function runAuto(files) {
     if (problem) {
       console.log(`  SKIP (${problem}): ${title}`);
       skipped++;
+      continue;
+    }
+
+    const status = checkStillOpen(url);
+    if (status && (!status.open || status.assigned)) {
+      const reason = !status.open ? "closed since drafted" : "already assigned to someone else since drafted";
+      console.log(`  SKIP (${reason}): ${title}`);
+      archive(f);
+      stale++;
       continue;
     }
 
@@ -178,7 +212,7 @@ async function runAuto(files) {
     await sleep(delayMs);
   }
 
-  console.log(`\nDone. Posted ${posted}, skipped ${skipped}. Posted today (total): ${state.postedToday}/${cap}.`);
+  console.log(`\nDone. Posted ${posted}, skipped ${skipped}, stale ${stale}. Posted today (total): ${state.postedToday}/${cap}.`);
 }
 
 function openInEditor(initialText) {
@@ -207,9 +241,21 @@ async function runInteractive(files) {
 
   let posted = 0;
   let skipped = 0;
+  let stale = 0;
   for (const f of files) {
     let text = fs.readFileSync(f, "utf8");
     let { title, url, points, comments, draft } = parseDraftFile(text);
+
+    if (url) {
+      const status = checkStillOpen(url);
+      if (status && (!status.open || status.assigned)) {
+        const reason = !status.open ? "closed (resolved/points already earned)" : "already assigned to someone else";
+        console.log(`SKIPPING (${reason} since this was drafted): ${title}`);
+        archive(f);
+        stale++;
+        continue;
+      }
+    }
 
     console.log("=".repeat(78));
     console.log(title);
@@ -250,7 +296,7 @@ async function runInteractive(files) {
   }
 
   rl.close();
-  console.log(`\nDone. Posted ${posted}, skipped ${skipped}.`);
+  console.log(`\nDone. Posted ${posted}, skipped ${skipped}, stale ${stale}.`);
 }
 
 async function main() {

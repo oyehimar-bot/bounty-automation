@@ -102,7 +102,10 @@ Read this before turning it on:
   `max_auto_posts_per_day` low (default 8) and read a sample of what actually
   got posted afterward.
 - It still runs the same quality gates as interactive review (rejects empty,
-  placeholder/failed, too-short, or AI-commentary-laced drafts), waits
+  placeholder/failed, too-short, or AI-commentary-laced drafts), **re-checks
+  each issue's live GitHub status right before posting** and skips it if
+  it's been assigned or closed since it was drafted (drafts can sit for a
+  while before review, and popular issues get claimed fast), waits
   `post_delay_ms` between posts (default 2000ms), and records everything it
   posts in `applied.json` so it's never re-applied to.
 - **Only covers GrantFox-style drafts** (the ones with a `- Issue:` GitHub
@@ -135,11 +138,14 @@ anyway — so a blind auto-submit bot would work against you even if one
 existed.
 
 What `node apply-drips.js` gives you instead is everything short of the
-click: for each drafted Drips application it copies the draft to your
+click: for each drafted Drips application it **first re-checks the issue's
+live GitHub status** (skipping it automatically if it's since been assigned
+or closed - drafts can sit a while before you get to them, and popular
+issues during a Wave get claimed fast), then copies the draft to your
 clipboard and opens the issue's Drips page in your browser, so you just
 paste and hit submit, then press Enter to mark it applied. One Enter-press
 and one paste per issue, instead of hunting down the file, copying by hand,
-and finding the right tab.
+finding the right tab, and then finding out it was already taken.
 
 ```bash
 node apply-drips.js                  # interactive, one issue at a time
@@ -192,7 +198,7 @@ node drips.js --dry                     shortlist without writing
 │   ├── application-prompt.md                how drafts are written
 │   ├── config.json, drips-config.json       your local configs (gitignored)
 │   ├── applied.json, state.json, drips-state.json, apply-state.json   local state (gitignored)
-│   └── inbox/, inbox-drips/, posted/, posted-drips/   working folders (gitignored)
+│   └── inbox/, inbox-drips/, posted/, posted-drips/, stale-drips/   working folders (gitignored)
 ├── runner/
 │   ├── assigned.ps1, solve.ps1, solve.sh    solve-side (in progress)
 │   ├── settings.json                        Claude Code permission allowlist

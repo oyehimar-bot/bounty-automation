@@ -32,6 +32,31 @@ const readline = require("readline");
 const { execFileSync } = require("child_process");
 const applied = require("./applied");
 
+/**
+ * Re-check an issue's live GitHub status right before showing it. Drafts are
+ * written once by drips.js and often reviewed later - during an active Wave,
+ * popular issues get claimed within minutes, so what was open when drafted
+ * may already be assigned or closed (resolved, points earned) by review time.
+ * Returns { open, assigned } or null if the check itself failed (in which
+ * case we show the item anyway rather than block on a flaky network call).
+ */
+function checkStillOpen(githubUrl) {
+  try {
+    const out = execFileSync(
+      "gh",
+      ["issue", "view", githubUrl, "--json", "state,assignees"],
+      { encoding: "utf8", windowsHide: true }
+    );
+    const data = JSON.parse(out);
+    return {
+      open: (data.state || "").toUpperCase() === "OPEN",
+      assigned: Array.isArray(data.assignees) && data.assignees.length > 0,
+    };
+  } catch {
+    return null; // couldn't verify (network, gh not available, etc.) - don't block on it
+  }
+}
+
 const args = process.argv.slice(2);
 const argVal = (flag, fallback) => {
   const i = args.indexOf(flag);
@@ -40,6 +65,7 @@ const argVal = (flag, fallback) => {
 
 const INBOX = path.resolve(argVal("--inbox", path.join(__dirname, "inbox-drips")));
 const ARCHIVE = path.join(path.dirname(INBOX), "posted-drips");
+const STALE_ARCHIVE = path.join(path.dirname(INBOX), "stale-drips");
 const STATE_PATH = path.join(__dirname, "drips-state.json");
 
 function loadDripsState() {
@@ -114,6 +140,11 @@ function archive(file) {
   fs.renameSync(file, path.join(ARCHIVE, path.basename(file)));
 }
 
+function archiveStale(file) {
+  fs.mkdirSync(STALE_ARCHIVE, { recursive: true });
+  fs.renameSync(file, path.join(STALE_ARCHIVE, path.basename(file)));
+}
+
 function recordApplied(ref, dripsState) {
   if (!ref) return;
   dripsState.applied[ref] = new Date().toISOString();
@@ -153,9 +184,21 @@ async function main() {
 
   let done = 0;
   let skipped = 0;
+  let stale = 0;
   for (const f of files) {
     const text = fs.readFileSync(f, "utf8");
-    const { title, points, pending, applyUrl, draft, ref } = parseDraftFile(text);
+    const { title, points, pending, applyUrl, githubUrl, draft, ref } = parseDraftFile(text);
+
+    if (githubUrl) {
+      const status = checkStillOpen(githubUrl);
+      if (status && (!status.open || status.assigned)) {
+        const reason = !status.open ? "closed (resolved/points already earned)" : "already assigned to someone else";
+        console.log(`SKIPPING (${reason} since this was drafted): ${title}`);
+        archiveStale(f);
+        stale++;
+        continue;
+      }
+    }
 
     console.log("=".repeat(78));
     console.log(title);
@@ -186,7 +229,7 @@ async function main() {
   }
 
   rl.close();
-  console.log(`\nDone. Went through ${done}, skipped ${skipped}.`);
+  console.log(`\nDone. Went through ${done}, skipped ${skipped}, stale ${stale}.`);
 }
 
 main().catch((e) => {

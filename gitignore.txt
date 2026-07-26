@@ -1,0 +1,25 @@
+# state and inbox - never commit these
+watcher/state.json
+watcher/drips-state.json
+watcher/applied.json
+watcher/apply-state.json
+watcher/inbox/
+watcher/inbox-drips/
+watcher/posted/
+watcher/posted-drips/
+watcher/stale-drips/
+runner/assigned-state.json
+runner/repos.json
+runner/solve-*.log
+
+# real configs - only .example.json versions ship
+watcher/config.json
+watcher/drips-config.json
+
+# node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
